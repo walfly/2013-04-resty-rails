@@ -3,54 +3,30 @@ require 'spec_helper'
 # This should return the minimal set of attributes required to create a valid
 # User. As you add validations to User, be sure to
 # update the return value of this method accordingly.
-def valid_json
+def valid_attributes
     { content => "testing" } 
+end
+
+def valid_comment
+    { }
 end
 
 describe "Comments" do
   before :each do
-    Comment.create! valid_json
-  end
-
-  describe "GET /comment/:id" do
-    it "returns properly formatted JSON" do
-      get :show, {:id => 1}
-      assigns(:comment).should eq(comment)
-    end
-  end
-
-  describe "GET new" do
-    it "assigns a new comment as @comment" do
-      get :new
-      assigns(:comment).should be_a_new(Comment)
-    end
-  end
-
-  describe "GET edit" do
-    it "assigns the requested comment as @comment" do
-      comment = Comment.create! valid_attributes
-      get :edit, {:id => comment.to_param}, valid_session
-      assigns(:comment).should eq(comment)
-    end
+    3.times { Comment.create! valid_attributes }
   end
 
   describe "POST create" do
     describe "with valid params" do
       it "creates a new Comment" do
         expect {
-          post :create, {:comment => valid_attributes}, valid_session
+          post :create, {:comment => valid_attributes}
         }.to change(Comment, :count).by(1)
       end
 
-      it "assigns a newly created comment as @comment" do
-        post :create, {:comment => valid_attributes}, valid_session
-        assigns(:comment).should be_a(Comment)
-        assigns(:comment).should be_persisted
-      end
-
-      it "redirects to the created comment" do
-        post :create, {:comment => valid_attributes}, valid_session
-        response.should redirect_to(Comment.last)
+      it "returns a 201 success" do
+        post :create, {:comment => valid_attributes}
+        response.status.should be(201)
       end
     end
 
@@ -70,6 +46,30 @@ describe "Comments" do
       end
     end
   end
+
+  describe "GET /comment/:id" do
+    it "returns properly formatted JSON" do
+      get :show, {:id => 1}
+      JSON.parse(response.body).should be_json_eql
+    end
+  end
+
+  describe "GET new" do
+    it "assigns a new comment as @comment" do
+      get :new
+      assigns(:comment).should be_a_new(Comment)
+    end
+  end
+
+  describe "GET edit" do
+    it "assigns the requested comment as @comment" do
+      comment = Comment.create! valid_attributes
+      get :edit, {:id => comment.to_param}, valid_session
+      assigns(:comment).should eq(comment)
+    end
+  end
+
+  
 
   describe "PUT update" do
     describe "with valid params" do
@@ -127,6 +127,13 @@ describe "Comments" do
       comment = Comment.create! valid_attributes
       delete :destroy, {:id => comment.to_param}, valid_session
       response.should redirect_to(comments_url)
+    end
+  end
+
+  describe "GET index" do
+    it "returns all the records" do
+      get :index
+      assigns(:groups).should eq([group])
     end
   end
 end
