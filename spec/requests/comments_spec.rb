@@ -1,33 +1,27 @@
 require 'spec_helper'
 
+# This should return the minimal set of attributes required to create a valid
+# User. As you add validations to User, be sure to
+# update the return value of this method accordingly.
+def valid_json
+    { content => "testing" } 
+end
+
 describe "Comments" do
-  describe "GET /comments" do
-    it "works! (now write some real specs)" do
-      # Run the generator again with the --webrat flag if you want to use webrat methods/matchers
-      get comments_path
-      response.status.should be(200)
-    end
+  before :each do
+    Comment.create! valid_json
   end
 
-  describe "GET /comments" do
-    it "assigns all comments as @comments" do
-      comment = Comment.create! valid_attributes
-      get :index, {}, valid_session
-      assigns(:comments).should eq([comment])
-    end
-  end
-
-  describe "GET show" do
-    it "assigns the requested comment as @comment" do
-      comment = Comment.create! valid_attributes
-      get :show, {:id => comment.to_param}, valid_session
+  describe "GET /comment/:id" do
+    it "returns properly formatted JSON" do
+      get :show, {:id => 1}
       assigns(:comment).should eq(comment)
     end
   end
 
   describe "GET new" do
     it "assigns a new comment as @comment" do
-      get :new, {}, valid_session
+      get :new
       assigns(:comment).should be_a_new(Comment)
     end
   end

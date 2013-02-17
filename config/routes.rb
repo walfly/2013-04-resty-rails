@@ -1,4 +1,7 @@
 Clams::Application.routes.draw do
+  resources :users
+
+
   mount ApiTaster::Engine => "/api_taster" if Rails.env.development?
   
   resources :users

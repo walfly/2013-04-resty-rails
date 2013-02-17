@@ -7,16 +7,8 @@ describe SubscriptionsController do
       get("/subscriptions").should route_to("subscriptions#index")
     end
 
-    it "routes to #new" do
-      get("/subscriptions/new").should route_to("subscriptions#new")
-    end
-
     it "routes to #show" do
       get("/subscriptions/1").should route_to("subscriptions#show", :id => "1")
-    end
-
-    it "routes to #edit" do
-      get("/subscriptions/1/edit").should route_to("subscriptions#edit", :id => "1")
     end
 
     it "routes to #create" do
