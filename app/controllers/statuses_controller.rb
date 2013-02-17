@@ -4,10 +4,7 @@ class StatusesController < ApplicationController
   def index
     @statuses = Status.all
 
-    respond_to do |format|
-      format.html # index.html.erb
-      format.json { render json: @statuses }
-    end
+    render json: @statuses 
   end
 
   # GET /statuses/1
@@ -15,41 +12,19 @@ class StatusesController < ApplicationController
   def show
     @status = Status.find(params[:id])
 
-    respond_to do |format|
-      format.html # show.html.erb
-      format.json { render json: @status }
-    end
+    render json: @status
   end
 
-  # GET /statuses/new
-  # GET /statuses/new.json
-  def new
-    @status = Status.new
-
-    respond_to do |format|
-      format.html # new.html.erb
-      format.json { render json: @status }
-    end
-  end
-
-  # GET /statuses/1/edit
-  def edit
-    @status = Status.find(params[:id])
-  end
 
   # POST /statuses
   # POST /statuses.json
   def create
     @status = Status.new(params[:status])
 
-    respond_to do |format|
-      if @status.save
-        format.html { redirect_to @status, notice: 'Status was successfully created.' }
-        format.json { render json: @status, status: :created, location: @status }
-      else
-        format.html { render action: "new" }
-        format.json { render json: @status.errors, status: :unprocessable_entity }
-      end
+    if @status.save
+      render json: @status, status: :created, location: @status 
+    else
+      render json: @status.errors, status: :bad_request
     end
   end
 
@@ -58,14 +33,10 @@ class StatusesController < ApplicationController
   def update
     @status = Status.find(params[:id])
 
-    respond_to do |format|
-      if @status.update_attributes(params[:status])
-        format.html { redirect_to @status, notice: 'Status was successfully updated.' }
-        format.json { head :no_content }
-      else
-        format.html { render action: "edit" }
-        format.json { render json: @status.errors, status: :unprocessable_entity }
-      end
+    if @status.update_attributes(params[:status])
+      head :no_content 
+    else
+      render json: @status.errors, status: :bad_request
     end
   end
 
@@ -74,10 +45,7 @@ class StatusesController < ApplicationController
   def destroy
     @status = Status.find(params[:id])
     @status.destroy
-
-    respond_to do |format|
-      format.html { redirect_to statuses_url }
-      format.json { head :no_content }
-    end
+    
+    head :no_content 
   end
 end
