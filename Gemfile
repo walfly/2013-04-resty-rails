@@ -30,6 +30,7 @@ group :test do
   gem 'guard-rspec'
   gem 'guard-migrate'
   gem 'migration_test_helper'
+  gem 'json_spec'
 end
 
 group :test, :development do
