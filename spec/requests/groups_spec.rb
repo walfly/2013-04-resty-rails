@@ -1,145 +1,100 @@
 require 'spec_helper'
 
-# This should return the minimal set of attributes required to create a valid
-# User. As you add validations to User, be sure to
-# update the return value of this method accordingly.
-def valid_attributes
-    {  }
-end
-
 describe "Groups" do
-  describe "GET /groups" do
-    it "works! (now write some real specs)" do
-      # Run the generator again with the --webrat flag if you want to use webrat methods/matchers
-      get groups_path
-      response.status.should be(200)
-    end
+  let(:valid_attributes) do
+   { :name => "We like to test", :motto => "Testing is the best" }
   end
 
-  describe "GET index" do
-    it "assigns all groups as @groups" do
-      group = Group.create! valid_attributes
-      get :index, {}, valid_session
-      assigns(:groups).should eq([group])
-    end
+  let(:invalid_attributes) do
+    {}
   end
 
-  describe "GET show" do
-    it "assigns the requested group as @group" do
-      group = Group.create! valid_attributes
-      get :show, {:id => group.to_param}, valid_session
-      assigns(:group).should eq(group)
-    end
+  before :each do
+    Group.create! valid_attributes.merge( :name => "new Group" ) 
+    @group = Group.create! valid_attributes.merge( :name => "keep it unique" )
   end
 
-  describe "GET new" do
-    it "assigns a new group as @group" do
-      get :new, {}, valid_session
-      assigns(:group).should be_a_new(Group)
-    end
-  end
-
-  describe "GET edit" do
-    it "assigns the requested group as @group" do
-      group = Group.create! valid_attributes
-      get :edit, {:id => group.to_param}, valid_session
-      assigns(:group).should eq(group)
-    end
-  end
-
-  describe "POST create" do
+  describe "POST /groups" do
     describe "with valid params" do
       it "creates a new Group" do
         expect {
-          post :create, {:group => valid_attributes}, valid_session
+          post "/groups", :group => valid_attributes
         }.to change(Group, :count).by(1)
       end
 
-      it "assigns a newly created group as @group" do
-        post :create, {:group => valid_attributes}, valid_session
-        assigns(:group).should be_a(Group)
-        assigns(:group).should be_persisted
-      end
-
-      it "redirects to the created group" do
-        post :create, {:group => valid_attributes}, valid_session
-        response.should redirect_to(Group.last)
+      it "returns a 201 Success" do
+        post "/groups", :group => valid_attributes
+        response.status.should be(201)
       end
     end
 
     describe "with invalid params" do
-      it "assigns a newly created but unsaved group as @group" do
+      it "does not create a new record" do
         # Trigger the behavior that occurs when invalid params are submitted
-        Group.any_instance.stub(:save).and_return(false)
-        post :create, {:group => {  }}, valid_session
-        assigns(:group).should be_a_new(Group)
+        expect {
+          post "/groups", :group => invalid_attributes
+        }.to change(Group, :count).by(0)
       end
 
-      it "re-renders the 'new' template" do
-        # Trigger the behavior that occurs when invalid params are submitted
-        Group.any_instance.stub(:save).and_return(false)
-        post :create, {:group => {  }}, valid_session
-        response.should render_template("new")
+      it "returns a 400 Bad Request" do
+        post "/groups", :group => invalid_attributes
+        response.status.should be(400)
       end
     end
   end
 
-  describe "PUT update" do
+  describe "GET /group/:id" do
+    it "returns properly formatted JSON" do
+      get "/groups/2"
+      response.body.should eq(@group.to_json)
+    end
+  end
+
+  describe "PUT /groups/1" do
     describe "with valid params" do
-      it "updates the requested group" do
-        group = Group.create! valid_attributes
-        # Assuming there are no other groups in the database, this
-        # specifies that the Group created on the previous line
-        # receives the :update_attributes message with whatever params are
-        # submitted in the request.
-        Group.any_instance.should_receive(:update_attributes).with({ "these" => "params" })
-        put :update, {:id => group.to_param, :group => { "these" => "params" }}, valid_session
+      it "updates the content of Group 1" do
+        put "/groups/1", :group => { :motto => "change text" }
+        Group.find(1).motto.should eq("change text")
       end
 
-      it "assigns the requested group as @group" do
-        group = Group.create! valid_attributes
-        put :update, {:id => group.to_param, :group => valid_attributes}, valid_session
-        assigns(:group).should eq(group)
-      end
-
-      it "redirects to the group" do
-        group = Group.create! valid_attributes
-        put :update, {:id => group.to_param, :group => valid_attributes}, valid_session
-        response.should redirect_to(group)
+      it "returns a 204 No Content" do
+        put "/groups/1", :group => { :motto => "change text" }
+        response.status.should be(204)
       end
     end
 
     describe "with invalid params" do
-      it "assigns the group as @group" do
-        group = Group.create! valid_attributes
+      it "does not change the record" do
         # Trigger the behavior that occurs when invalid params are submitted
-        Group.any_instance.stub(:save).and_return(false)
-        put :update, {:id => group.to_param, :group => {  }}, valid_session
-        assigns(:group).should eq(group)
+        put "/groups/1", :group => { :motto => nil }
+        Group.find(1).motto.should eq("Testing is the best")
       end
 
-      it "re-renders the 'edit' template" do
-        group = Group.create! valid_attributes
-        # Trigger the behavior that occurs when invalid params are submitted
-        Group.any_instance.stub(:save).and_return(false)
-        put :update, {:id => group.to_param, :group => {  }}, valid_session
-        response.should render_template("edit")
+      it "returns a 400 Bad Request" do
+        put "/groups/1", :group => { :motto => nil }
+        response.status.should be(400)
       end
     end
   end
 
-  describe "DELETE destroy" do
+  describe "DELETE /groups/1" do
     it "destroys the requested group" do
-      group = Group.create! valid_attributes
       expect {
-        delete :destroy, {:id => group.to_param}, valid_session
+        delete "/groups/1"
       }.to change(Group, :count).by(-1)
     end
 
-    it "redirects to the groups list" do
-      group = Group.create! valid_attributes
-      delete :destroy, {:id => group.to_param}, valid_session
-      response.should redirect_to(groups_url)
+    it "returns a 204 No Content" do
+        delete "/groups/1"
+        response.status.should be(204)
+    end
+  end
+
+  describe "GET /groups" do
+    it "returns all the records" do
+      get "/groups"
+      response.status.should be(200)
+      response.body.should have_json_size(2)
     end
   end
 end

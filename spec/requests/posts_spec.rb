@@ -1,145 +1,99 @@
 require 'spec_helper'
 
-# This should return the minimal set of attributes required to create a valid
-# User. As you add validations to User, be sure to
-# update the return value of this method accordingly.
-def valid_attributes
-    {  }
-end
-
 describe "Posts" do
-  describe "GET /posts" do
-    it "works! (now write some real specs)" do
-      # Run the generator again with the --webrat flag if you want to use webrat methods/matchers
-      get posts_path
-      response.status.should be(200)
-    end
+  let(:valid_attributes) do
+   { :title => "New Post", :content => "testing" }
   end
 
-  describe "GET index" do
-    it "assigns all posts as @posts" do
-      post = Post.create! valid_attributes
-      get :index, {}, valid_session
-      assigns(:posts).should eq([post])
-    end
+  let(:invalid_attributes) do
+    {}
   end
 
-  describe "GET show" do
-    it "assigns the requested post as @post" do
-      post = Post.create! valid_attributes
-      get :show, {:id => post.to_param}, valid_session
-      assigns(:post).should eq(post)
-    end
+  before :each do
+    3.times { @post = Post.create! valid_attributes }
   end
 
-  describe "GET new" do
-    it "assigns a new post as @post" do
-      get :new, {}, valid_session
-      assigns(:post).should be_a_new(Post)
-    end
-  end
-
-  describe "GET edit" do
-    it "assigns the requested post as @post" do
-      post = Post.create! valid_attributes
-      get :edit, {:id => post.to_param}, valid_session
-      assigns(:post).should eq(post)
-    end
-  end
-
-  describe "POST create" do
+  describe "POST /posts" do
     describe "with valid params" do
       it "creates a new Post" do
         expect {
-          post :create, {:post => valid_attributes}, valid_session
+          post "/posts", :post => valid_attributes
         }.to change(Post, :count).by(1)
       end
 
-      it "assigns a newly created post as @post" do
-        post :create, {:post => valid_attributes}, valid_session
-        assigns(:post).should be_a(Post)
-        assigns(:post).should be_persisted
-      end
-
-      it "redirects to the created post" do
-        post :create, {:post => valid_attributes}, valid_session
-        response.should redirect_to(Post.last)
+      it "returns a 201 Success" do
+        post "/posts", :post => valid_attributes
+        response.status.should be(201)
       end
     end
 
     describe "with invalid params" do
-      it "assigns a newly created but unsaved post as @post" do
+      it "does not create a new record" do
         # Trigger the behavior that occurs when invalid params are submitted
-        Post.any_instance.stub(:save).and_return(false)
-        post :create, {:post => {  }}, valid_session
-        assigns(:post).should be_a_new(Post)
+        expect {
+          post "/posts", :post => invalid_attributes
+        }.to change(Post, :count).by(0)
       end
 
-      it "re-renders the 'new' template" do
-        # Trigger the behavior that occurs when invalid params are submitted
-        Post.any_instance.stub(:save).and_return(false)
-        post :create, {:post => {  }}, valid_session
-        response.should render_template("new")
+      it "returns a 400 Bad Request" do
+        post "/posts", :post => invalid_attributes
+        response.status.should be(400)
       end
     end
   end
 
-  describe "PUT update" do
+  describe "GET /post/:id" do
+    it "returns properly formatted JSON" do
+      get "/posts/3"
+      response.body.should eq(@post.to_json)
+    end
+  end
+
+  describe "PUT /posts/1" do
     describe "with valid params" do
-      it "updates the requested post" do
-        post = Post.create! valid_attributes
-        # Assuming there are no other posts in the database, this
-        # specifies that the Post created on the previous line
-        # receives the :update_attributes message with whatever params are
-        # submitted in the request.
-        Post.any_instance.should_receive(:update_attributes).with({ "these" => "params" })
-        put :update, {:id => post.to_param, :post => { "these" => "params" }}, valid_session
+      it "updates the content of Post 1" do
+        put "/posts/1", :post => { :content => "change text" }
+        Post.find(1).content.should eq("change text")
       end
 
-      it "assigns the requested post as @post" do
-        post = Post.create! valid_attributes
-        put :update, {:id => post.to_param, :post => valid_attributes}, valid_session
-        assigns(:post).should eq(post)
-      end
-
-      it "redirects to the post" do
-        post = Post.create! valid_attributes
-        put :update, {:id => post.to_param, :post => valid_attributes}, valid_session
-        response.should redirect_to(post)
+      it "returns a 204 No Content" do
+        put "/posts/1", :post => { :content => "change text" }
+        response.status.should be(204)
       end
     end
 
     describe "with invalid params" do
-      it "assigns the post as @post" do
-        post = Post.create! valid_attributes
+      it "does not change the record" do
         # Trigger the behavior that occurs when invalid params are submitted
-        Post.any_instance.stub(:save).and_return(false)
-        put :update, {:id => post.to_param, :post => {  }}, valid_session
-        assigns(:post).should eq(post)
+        put "/posts/1", :post => { :content => nil }
+        Post.find(1).content.should eq("testing")
       end
 
-      it "re-renders the 'edit' template" do
-        post = Post.create! valid_attributes
-        # Trigger the behavior that occurs when invalid params are submitted
-        Post.any_instance.stub(:save).and_return(false)
-        put :update, {:id => post.to_param, :post => {  }}, valid_session
-        response.should render_template("edit")
+      it "returns a 400 Bad Request" do
+        put "/posts/1", :post => { :content => nil }
+        response.status.should be(400)
       end
     end
   end
 
-  describe "DELETE destroy" do
+  describe "DELETE /post/1" do
     it "destroys the requested post" do
-      post = Post.create! valid_attributes
       expect {
-        delete :destroy, {:id => post.to_param}, valid_session
+        delete "/posts/1"
       }.to change(Post, :count).by(-1)
     end
 
-    it "redirects to the posts list" do
-      post = Post.create! valid_attributes
-      delete :destroy, {:id => post.to_param}, valid_session
-      response.should redirect_to(posts_url)
+    it "returns a 204 No Content" do
+        delete "/posts/1"
+        response.status.should be(204)
+    end
+  end
+
+  describe "GET /posts" do
+    it "returns all the records" do
+      get "/posts"
+      response.status.should be(200)
+      response.body.should have_json_size(3)
     end
   end
 end
