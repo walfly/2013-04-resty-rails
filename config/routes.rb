@@ -1,7 +1,12 @@
 Clams::Application.routes.draw do
   # Access API description at /api_taster
   mount ApiTaster::Engine => "/api_taster" if Rails.env.development?
-
+    resources :comments
+    resources :groups
+    resources :posts
+    resources :statuses
+    resources :subscriptions
+    resources :users
   # The priority is based upon order of creation:
   # first created -> highest priority.
 
@@ -14,8 +19,7 @@ Clams::Application.routes.draw do
   # This route can be invoked with purchase_url(:id => product.id)
 
   # Sample resource route (maps HTTP verbs to controller actions automatically):
-  #   resources :products
-
+  #resources :comments
   # Sample resource route with options:
   #   resources :products do
   #     member do
